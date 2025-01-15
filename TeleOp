@@ -1,0 +1,326 @@
+package org.firstinspires.ftc.teamcode.drive.opmode;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+@Config
+@TeleOp
+public class TeleOpFlorin extends LinearOpMode {
+
+    private DcMotor hanging;
+    private DcMotorEx extendo;
+    private DcMotorEx balance;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
+    private TouchSensor limitSwitch;
+
+    //    private ColorSensor colorSensor;
+
+    private  DcMotorEx agatare;
+    private Servo gheara;
+    private Servo servoCap;
+    private static final int MaxLun = 2050;
+    private static final int MinLun = 0;
+
+    private boolean valid = false;
+    private boolean validtarg = false;
+    public static double putereMotor = 1;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+        hanging = hardwareMap.get(DcMotor.class,"hang");
+        hanging.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        hanging.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hanging.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        servoCap = hardwareMap.get(Servo.class, "servoCap");
+        //colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+        gheara = hardwareMap.get(Servo.class, "servoGheara");
+        extendo = hardwareMap.get(DcMotorEx.class, "extendo");
+        extendo.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        agatare = hardwareMap.get(DcMotorEx.class,"agatare");
+        agatare.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        balance = hardwareMap.get(DcMotorEx.class, "motorBalans");
+        balance.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        frontLeft = hardwareMap.get(DcMotor.class, "stangaFata");
+        frontRight = hardwareMap.get(DcMotor.class, "dreaptaFata");
+        backLeft = hardwareMap.get(DcMotor.class, "stangaSpate");
+        backRight = hardwareMap.get(DcMotor.class, "dreaptaSpgate");
+
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        balance.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        balance.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        extendo.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        extendo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        agatare.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        agatare.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        gheara.setPosition(0);
+        servoCap.scaleRange(0,0.2);
+        servoCap.setPosition(0);
+
+        int CAZbalance=0;
+
+        gamepad1.setLedColor(255, 0, 0, 1200000000);
+        gamepad2.setLedColor(0, 255, 255, 1200000000);
+
+
+        waitForStart();
+
+        if (isStopRequested()) return;
+
+        while (opModeIsActive()) {
+            drive.setWeightedDrivePower(
+                    new Pose2d(
+                            -gamepad1.left_stick_y,
+                            -gamepad1.left_stick_x,
+                            -gamepad1.right_stick_x
+                    )
+            );
+
+            drive.update();
+            Pose2d poseEstimate = drive.getPoseEstimate();
+            telemetry.addData("x", poseEstimate.getX());
+            telemetry.addData("y", poseEstimate.getY());
+            telemetry.addData("heading", poseEstimate.getHeading());
+
+            double balans= balance.getCurrentPosition();
+            double exteno=extendo.getCurrentPosition();
+            double agatarre = agatare.getCurrentPosition();
+            double hangs= hanging.getCurrentPosition();
+            telemetry.addData("balans",balans);
+            telemetry.addData("extendo",exteno);
+            telemetry.addData("hangs",hangs);
+            telemetry.addData("agatarre",agatarre);
+            telemetry.update();
+
+
+            //RESET SERVOCAP
+            if(gamepad2.y){
+                valid=false;
+                servoCap.setPosition(0);
+            }
+
+
+            if(gamepad2.a){
+                valid=false;
+                goToExtindo(-375);
+                servoCap.setPosition(0.5);
+            }
+//Debobinare
+            if(gamepad2.left_stick_x != 0){
+                int inc = 150;
+                hanging.setPower(0);
+               goToAgatare(agatare.getCurrentPosition()-inc);
+            }
+
+            if(gamepad2.right_stick_x != 0){
+                int inc = 150;
+                hanging.setPower(0);
+               goToAgatare(agatare.getCurrentPosition()+inc);
+            }
+//Reset
+            if (gamepad1.touchpad) {
+                valid = false;
+                servoCap.setPosition(0);
+                goToExtindo(0);
+                goToBrat(0);
+
+            }
+
+            if (gamepad2.touchpad) {
+                valid = false;
+                servoCap.setPosition(0);
+                goToExtindo(0);
+                goToBrat(0);
+            }
+
+            if (gamepad2.x) {
+                valid=false;
+                inchideGheara();
+            }
+
+            if (gamepad2.b) {
+                valid=false;
+                deschideGheara();
+            }
+            //Cos jos
+            if (gamepad2.dpad_down) {
+                valid=false;
+                goToBrat(-1325);
+                sleep(250);
+                goToExtindo(-1615);
+
+            }
+
+            //Cos sus
+            if (gamepad2.dpad_up) {
+                valid=false;
+                goToBrat(-1317);
+                sleep(1300);
+                goToExtindo(-1900);
+                servoCap.setPosition(0.57);
+            }
+// level 1 ascent de brainrot
+
+            if(gamepad2.right_bumper){
+             goToHang(100);
+            }
+            if(gamepad2.left_bumper){
+                goToHang(65);
+            }
+
+
+
+//            if(gamepad2.left_bumper){
+//                goToHang(0);
+//            }
+
+//            if (gamepad1.b) {
+//                valid=false;
+//                deschideGheara();
+//            }
+
+//            if(gamepad1.x){
+//                valid=false;
+//                inchideGheara();
+//            }
+//Clipsare
+            if(gamepad1.a && valid) {
+                  goToExtindo(-1550);
+            }
+
+//Bara sus
+
+//           if (gamepad1.dpad_up) {
+//                valid = false;
+//                goToBrat(-900);
+//                sleep(300);
+//                goToExtindo(-875);
+//                servoCap.setPosition(0.57);
+//            }
+
+            if (gamepad1.dpad_up) {
+                valid=true;
+                goToBrat(-1317);
+                sleep(400);
+                goToExtindo(-905);
+
+            }
+
+            //Bara jos
+            if (gamepad1.dpad_down) {
+                valid=false;
+                servoCap.setPosition(0.25);
+                goToBrat(-200);
+            }
+//Human
+            if (gamepad1.right_bumper) {
+                valid=false;
+                servoCap.setPosition(0.17);
+                goToExtindo(-380);
+            }
+////Reset
+//            if (valid && gamepad1.dpad_down) {
+//                servoCap.setPosition(0);
+//                goToBrat(0);
+//            }
+
+//Targul de Craciun
+
+            if(gamepad1.x){
+                valid=false;
+                servoCap.setPosition(0.3);
+            }
+
+//Sample
+            if (gamepad1.left_bumper) {
+                valid=false;
+                servoCap.setPosition(0.5);
+            }
+            //Retragere extendo tarc
+            if(gamepad2.left_trigger!=0 && extendo.getCurrentPosition()<1000){
+
+
+                int inc=-70;
+                int inc2=10
+                        ;
+                goToExtindo(extendo.getCurrentPosition()-inc);
+                goToBrat(balance.getCurrentPosition()+inc2);
+
+            }
+            //Extindere extendo tarc
+            if(gamepad2.right_trigger!=0 && extendo.getCurrentPosition()>-1600){
+                int inc=70;
+                int inc2=10;
+                goToExtindo(extendo.getCurrentPosition()-inc);
+                goToBrat(balance.getCurrentPosition()-inc2);
+
+            }
+        }
+    }
+
+    public void inchideGheara() {
+
+        gheara.setPosition(0.85);
+    }
+
+    public void deschideGheara() {
+        gheara.setPosition(0);
+    }
+
+    public void goToExtindo(int position) {
+        extendo.setTargetPosition(position);
+        extendo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extendo.setPower(-1);
+
+            telemetry.addData("Target Position", position);
+            telemetry.update();
+        }
+
+    public void goToHang(int position) {
+        hanging.setTargetPosition(position);
+        hanging.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        hanging.setPower(-1);
+        // if( hanging.getCurrentPosition() == position)
+           // hanging.setPower(0);
+    }
+
+
+    public void goToAgatare(int position) {
+        agatare.setTargetPosition(position);
+        agatare.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        agatare.setPower(-1);
+    }
+
+    public void goToBrat(int position) {
+        balance.setTargetPosition(position);
+        balance.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        balance.setPower(-0.5);
+    }
+
+     }
