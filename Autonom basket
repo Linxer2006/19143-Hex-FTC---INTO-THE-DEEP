@@ -1,0 +1,190 @@
+package org.firstinspires.ftc.teamcode.drive.opmode;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+@Config
+@Autonomous
+public class AutonomCosulDeSUS extends LinearOpMode {
+
+    private DcMotorEx extendo;
+    private DcMotorEx balance;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
+    private TouchSensor limitSwitch;
+
+    private Servo gheara;
+    private Servo servoCap;
+
+    private boolean esteDeschisa = false;
+
+    public static int poz1 = -750;
+    public static int poz2 = -1000;
+    public static int poz3 = -2020;
+    public static int poz0 = -5;
+
+    public static int ridica1 = -70;
+    public static int ridica2 = -260;
+    public static int ridica3 = -1010;
+    public static int casa = 0;
+    public static int ridica4 = -1150;
+
+    public static double putereMotor = 0.7;
+    public static int rotatie=100;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+
+        servoCap = hardwareMap.get(Servo.class, "servoCap");
+
+        gheara = hardwareMap.get(Servo.class, "servoGheara");
+        extendo = hardwareMap.get(DcMotorEx.class, "extendo");
+        extendo.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        balance = hardwareMap.get(DcMotorEx.class, "motorBalans");
+        balance.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        frontLeft = hardwareMap.get(DcMotor.class, "stangaFata");
+        frontRight = hardwareMap.get(DcMotor.class, "dreaptaFata");
+        backLeft = hardwareMap.get(DcMotor.class, "stangaSpate");
+        backRight = hardwareMap.get(DcMotor.class, "dreaptaSpgate");
+
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        balance.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        balance.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        extendo.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        extendo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        gheara.setPosition(0.85);
+        servoCap.scaleRange(0,0.2);
+        servoCap.setPosition(0);
+
+
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
+                .lineToSplineHeading(new Pose2d(12, -8, Math.toRadians(40)))
+                .addDisplacementMarker(() -> {
+                    goToBrat(-1317);
+                })
+                .build();
+
+        Trajectory trajectory1 = drive.trajectoryBuilder(trajectory.end())
+                .lineTo(new Vector2d(20, -7))
+                .addDisplacementMarker(() -> {
+                    goToExtindo(-1950);
+                    servoCap.setPosition(0.6);
+                })
+
+                .build();
+
+        Trajectory trajectory2 = drive.trajectoryBuilder(trajectory1.end())
+                .lineToLinearHeading(new Pose2d(12, -7,Math.toRadians(-90)))
+                .build();
+
+        Trajectory trajectory3 = drive.trajectoryBuilder(trajectory2.end())
+                .lineTo(new Vector2d(7,-9))
+                .build();
+
+
+        //Parcare
+        //PI = Parcare Inceput , PF = parcare final;
+        Trajectory trajectoryPI = drive.trajectoryBuilder(trajectory2.end())
+                .lineTo(new Vector2d(10, -45))
+                //y aici da in fata de ce nus
+//                .addTemporalMarker(0.2,()-> {
+//                servoCap.setPosition(0.3);
+//        })
+                .build();
+        Trajectory trajectoryPF = drive.trajectoryBuilder(trajectoryPI.end())
+                .lineTo(new Vector2d(-25,-45))
+//                .lineTo(new Vector2d(14, -15))
+//                .addTemporalMarker(0.3,()-> {
+//                   gheara.setPosition(0);
+        .build();
+//                })
+
+
+
+
+        waitForStart();
+
+        if (isStopRequested()) return;
+
+        double Pozbalance=balance.getCurrentPosition();
+        drive.followTrajectory(trajectory);
+        sleep(700);
+        drive.followTrajectory(trajectory1);
+        sleep(1000);
+        gheara.setPosition(0);
+        sleep(300);
+        servoCap.setPosition(0);
+        drive.followTrajectory(trajectory2);
+        RESET();
+        sleep(400);
+        drive.followTrajectory(trajectory3);
+        servoCap.setPosition(0.50);
+        goToExtindo(-1280);
+        sleep(1000);
+        gheara.setPosition(0.85);
+        //sleep(100);
+       // drive.followTrajectory(trajectoryPI);
+//        sleep(100);
+//        servoCap.setPosition(0.5);
+        //drive.followTrajectory(trajectoryPF);
+
+
+//        sleep(2500);
+//        drive.followTrajectory(trajectory25);
+//        drive.followTrajectory(trajectory2);
+
+
+
+
+
+
+
+
+        while (!isStopRequested() && opModeIsActive()) ;
+
+    }
+    public void goToExtindo(int position) {
+        extendo.setTargetPosition(position);
+        extendo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extendo.setPower(-1);
+
+    }
+
+    public void goToBrat(int position) {
+        balance.setTargetPosition(position);
+        balance.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        balance.setPower(-0.5);
+    }
+    public void RESET(){
+        servoCap.setPosition(0);
+        goToExtindo(0);
+        goToBrat(0);
+    }
+}
+//193
