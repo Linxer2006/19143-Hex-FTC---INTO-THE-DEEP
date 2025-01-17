@@ -1,0 +1,324 @@
+package org.firstinspires.ftc.teamcode.drive.opmode;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+
+@Config
+@Autonomous
+public class AutonomBHV4 extends LinearOpMode {
+
+    private DcMotorEx extendo;
+    private DcMotorEx balance;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
+    private TouchSensor limitSwitch;
+
+    private Servo gheara;
+    private Servo servoCap;
+
+
+    private boolean esteDeschisa = false;
+
+    public static int poz1 = -750;
+    public static int poz2 = -1000;
+    public static int poz3 = -2020;
+    public static int poz0 = -5;
+
+    public static int ridica1 = -70;
+    public static int ridica2 = -260;
+    public static int ridica3 = -1010;
+    public static int casa = 0;
+    public static int ridica4 = -1150;
+
+    public static double putereMotor = 0.7;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+
+        servoCap = hardwareMap.get(Servo.class, "servoCap");
+
+        gheara = hardwareMap.get(Servo.class, "servoGheara");
+        extendo = hardwareMap.get(DcMotorEx.class, "extendo");
+        extendo.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        balance = hardwareMap.get(DcMotorEx.class, "motorBalans");
+        balance.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        frontLeft = hardwareMap.get(DcMotor.class, "stangaFata");
+        frontRight = hardwareMap.get(DcMotor.class, "dreaptaFata");
+        backLeft = hardwareMap.get(DcMotor.class, "stangaSpate");
+        backRight = hardwareMap.get(DcMotor.class, "dreaptaSpgate");
+
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        balance.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        balance.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        extendo.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        extendo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+
+        gheara.setPosition(0.87);
+        servoCap.scaleRange(0,0.2);
+        servoCap.setPosition(0);
+
+
+        double DISTANCE = -25;
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
+                .lineToConstantHeading(new Vector2d(-26,0))
+
+                .addTemporalMarker(0.1,()-> {
+                    goToBrat(-1445);
+                    goToExtindo(-530);
+                    servoCap.setPosition(0.1);
+
+                })
+
+                .build();
+
+
+        Trajectory trajectory25 = drive.trajectoryBuilder(trajectory.end())
+                .lineToConstantHeading(new Vector2d(-21,0))
+                .addDisplacementMarker(() -> {
+                    gheara.setPosition(0);
+                    goToExtindo(0);
+
+                })
+                .addDisplacementMarker(() -> {
+                    goToExtindo1(0);
+                    servoCap.setPosition(0);
+                })
+                .build();
+
+        Trajectory trajectory2 = drive.trajectoryBuilder(trajectory25.end())
+                .splineToConstantHeading(new Vector2d(-25,25),Math.toRadians(0))
+                .build();
+
+        Trajectory trajectory3 = drive.trajectoryBuilder(trajectory2.end())
+                .lineToConstantHeading(new Vector2d(-50,35.8))
+                .build();
+
+        Trajectory trajectory4 = drive.trajectoryBuilder(trajectory3.end())
+                .lineToConstantHeading(new Vector2d(-3,35.8))
+                .build();
+
+
+        Trajectory trajectory6 = drive.trajectoryBuilder(trajectory4.end())
+                .back(46)
+                .build();
+
+        Trajectory trajectory7 = drive.trajectoryBuilder(trajectory6.end())
+                .strafeLeft(9)
+                .build();
+
+        Trajectory trajectory8 = drive.trajectoryBuilder(trajectory7.end())
+                .forward(44)
+
+                .build();
+        Trajectory trajectory9 = drive.trajectoryBuilder(trajectory8.end())
+                .back(9)
+                .addTemporalMarker(2, () -> {
+                    servoCap.setPosition(0.3);
+                    goToExtindo(-430);
+                })
+
+
+                .build();
+
+        //AL DOILEA CLIPS
+        Trajectory trajectory10 = drive.trajectoryBuilder(trajectory9.end())
+                .forward(8.7)
+                .addTemporalMarker(1, () -> {
+
+                    // goToExtindo1(500);
+                    gheara.setPosition(0.87);
+
+                })
+
+
+                .build();
+        Trajectory trajectory105 = drive.trajectoryBuilder(trajectory10.end())
+//pls 🙏
+                .forward(0.45)
+                .addDisplacementMarker( () -> {
+
+                    goToExtindo1(0);
+                    servoCap.setPosition(0);
+
+                })
+                .build();
+
+
+        Trajectory trajectory11 = drive.trajectoryBuilder(trajectory105.end())
+
+                .lineTo(new Vector2d(-17,-2))
+                .addTemporalMarker(0.1, () -> {
+
+                    goToExtindo1(0);
+                    servoCap.setPosition(0);
+
+                })
+                .build();
+
+        Trajectory trajectory12 = drive.trajectoryBuilder(trajectory11.end())
+                .lineTo(new Vector2d(-26,-2))
+                .addTemporalMarker(2, () -> {
+                    goToBrat(-1445);
+                    goToExtindo(-600);
+                    servoCap.setPosition(0.1);
+
+                })
+                .build();
+
+//LUAT AL 3 LEA CLIPS NOU
+        Trajectory trajectory16 = drive.trajectoryBuilder(trajectory12.end())
+                .splineToConstantHeading(new Vector2d(-9,33), Math.toRadians(0))
+                .build();
+
+        Trajectory trajectory17 = drive.trajectoryBuilder(trajectory16.end())
+                .forward(2.5)
+                .build();
+        Trajectory trajectory175 = drive.trajectoryBuilder(trajectory17.end())
+                .forward(0.5)
+                .build();
+        Trajectory trajectory18 = drive.trajectoryBuilder(trajectory17.end())
+                .lineTo(new Vector2d(-26.3,4))
+                .addTemporalMarker(1, () -> {
+                    goToBrat(-1445);
+                    goToExtindo(-650);
+                    servoCap.setPosition(0.1);
+
+                })
+                .build();
+        Trajectory trajectory19 = drive.trajectoryBuilder(trajectory18.end())
+                .splineToConstantHeading(new Vector2d(-8,33), Math.toRadians(0))
+                .build();
+
+        waitForStart();
+
+        if (isStopRequested()) return;
+        int adv = -1600;
+        double Pozbalance=balance.getCurrentPosition();
+
+        drive.followTrajectory(trajectory);
+
+        goToExtindo1(-1550);
+        //drive.followTrajectory(trajectory15);
+        sleep(100);
+        if(extendo.getCurrentPosition() == adv) {
+            gheara.setPosition(0);
+            RESET();
+        }
+        //PRIMUL CLIPS
+        drive.followTrajectory(trajectory25);
+        //RESET
+        balance.setTargetPosition(-200);
+        sleep(200);
+        RESET();
+        drive.followTrajectory(trajectory2);
+        drive.followTrajectory(trajectory3);
+        drive.followTrajectory(trajectory4);
+
+        drive.followTrajectory(trajectory6);
+        drive.followTrajectory(trajectory7);
+
+        drive.followTrajectory(trajectory8);
+        drive.followTrajectory(trajectory9);
+        drive.followTrajectory(trajectory10);
+        sleep(350);
+        drive.followTrajectory(trajectory11);
+        sleep(500);
+        drive.followTrajectory(trajectory12);
+        sleep(1000);
+        goToExtindo1(-1550);
+        sleep(1000);
+        goToExtindo1(0);
+        gheara.setPosition(0);
+        goToBrat(0);
+        servoCap.setPosition(0);
+        /*
+       drive.followTrajectory(trajectory13);
+       drive.followTrajectory(trajectory14);
+       drive.followTrajectory(trajectory15);
+       */
+        drive.followTrajectory(trajectory16);
+        drive.followTrajectory(trajectory17);
+        servoCap.setPosition(0.285);
+        goToExtindo(-430);
+        sleep(550);
+        gheara.setPosition(0.87);
+        sleep(500);
+        balance.setTargetPosition(-200);
+        sleep(200);
+        RESET();
+        drive.followTrajectory(trajectory175);
+        drive.followTrajectory(trajectory18);
+        sleep(500);
+        goToExtindo1(-1550);
+        sleep(670);
+        gheara.setPosition(0);
+        RESET();
+        drive.followTrajectory(trajectory19);
+
+        Pose2d poseEstimate = drive.getPoseEstimate();
+        telemetry.addData("Balans", Pozbalance);
+        telemetry.addData("finalX", poseEstimate.getX());
+        telemetry.addData("finalY", poseEstimate.getY());
+        telemetry.addData("finalHeading", poseEstimate.getHeading());
+        telemetry.update();
+
+
+
+        while (!isStopRequested() && opModeIsActive()) ;
+
+    }
+    public void goToExtindo(int position) {
+        extendo.setTargetPosition(position);
+        extendo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extendo.setPower(-0.5);
+
+    }
+    public void goToExtindo1(int position) {
+        extendo.setTargetPosition(position);
+        extendo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extendo.setPower(-0.8);
+
+    }
+
+    public void goToBrat(int position) {
+        balance.setTargetPosition(position);
+        balance.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        balance.setPower(-0.7);
+    }
+    public void RESET(){
+        servoCap.setPosition(0);
+        goToExtindo1(0);
+        goToBrat(0);
+    }
+}
+//193
